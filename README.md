@@ -46,22 +46,61 @@ A self-hosted tool that checks Disneyland Paris restaurant availability for your
 
    In the Web UI, click **Login and save session**; or run `python run.py --login-only --show-browser`. A browser will open—log in to Disneyland Paris when prompted. The session is saved so you don’t have to log in again (until it expires).
 
-### Web UI (recommended)
+### How to use the GUI
 
-Run the app in your browser so you can set options and run checks without using the command line:
+The web interface lets you configure and run checks without using the command line.
+
+**1. Start the app**
+
+From the project folder, run:
 
 ```bash
 streamlit run app.py
 ```
 
-Your browser will open to the app. There you can:
+Your default browser will open to the app (usually at `http://localhost:8501`). Keep this tab open while you use the app.
 
-- **Set options** in the form (restaurant, date, party size, time window, auto-book, dry run) and click **Save configuration**.
-- Click **Login and save session** once to log in to Disneyland Paris in a pop-up browser; the session is saved for future runs.
-- Click **Check availability once** to run a single check and see the result in the page.
-- For continuous monitoring, the app shows the command to run in a terminal (`python run.py --monitor`).
+**2. Configure your search**
 
-No need to edit YAML for basic use—everything can be done from the UI.
+In the **Configuration** form, fill in:
+
+- **Restaurant name** – The exact name as on the Disneyland Paris site (e.g. *Auberge de Cendrillon*).
+- **Party size** – Number of guests (1–20).
+- **Date to check** – Use the date picker for your main date.
+- **Extra dates** (optional) – Add more dates as a comma-separated list (e.g. `2026-03-16, 2026-03-17`).
+- **Time window** (optional) – Leave blank to see any time, or set e.g. **Time window start** `18:00` and **Time window end** `21:00` for dinner only.
+- **Check interval** – Only used when you run continuous monitoring; how often to re-check (in minutes).
+- **Auto-book when a slot is found** – If checked, the tool will complete the reservation automatically when it finds a table. If unchecked, it only notifies you.
+- **Dry run** – If checked, it will never click “Confirm” (useful to test that availability is detected without actually booking).
+- **Show browser when checking** – If checked, a browser window will be visible when you run a check (handy for debugging).
+
+Click **Save configuration** to write these settings to `config.yaml`. You only need to change the form when you want to update your options.
+
+**3. Log in (first time only)**
+
+Click **🔐 Login and save session**.
+
+A separate browser window will open to Disneyland Paris. Log in there with your Disney account when prompted. The app will wait up to 2 minutes. Once you’re logged in, the app saves your session and you can close that browser window. Future checks will reuse this session so you don’t have to log in again (until the session expires—then repeat this step).
+
+**4. Check availability**
+
+Click **🔍 Check availability once**.
+
+The app will run a single check in the background (or in a visible browser if you turned on “Show browser when checking”). When it finishes, the **Result** box will show whether any times were found for your dates. If you have notifications set up (e.g. email or Pushover), you’ll get an alert when a table is available.
+
+**5. Continuous monitoring**
+
+The GUI runs one check per button click. To keep checking every few minutes until a slot appears, use the command line. The app shows the exact command in the **Actions** section:
+
+```bash
+python run.py --monitor
+```
+
+Run that in a terminal from the project folder. It will keep running until it finds availability (and, if auto-book is on, books it), then exit. You can close the browser tab with the GUI; the monitor runs separately.
+
+---
+
+You can do all of the above from the GUI without editing `config.yaml` by hand. For email or Pushover alerts, add the settings to `config.yaml` (see Configuration reference below) or use the environment variables listed there.
 
 ## Usage (command line)
 
