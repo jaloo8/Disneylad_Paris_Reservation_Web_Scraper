@@ -20,17 +20,47 @@ A self-hosted tool that checks Disneyland Paris restaurant availability for your
 
 ## Setup
 
-1. **Clone and install dependencies**
+1. **Clone the repo and go into the folder**
 
    ```bash
    cd Disneylad_Paris_Reservation_Web_Scraper
-   pip install -r requirements.txt
-   playwright install chromium
    ```
 
-2. **Config**
+2. **Optional: use a virtual environment** (recommended so dependencies don’t conflict with other projects)
 
-   Copy the example config and edit it:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate   # On Windows: .venv\Scripts\activate
+   ```
+
+3. **Install Python dependencies**
+
+   Use the same Python you’ll run the app with (`python3` if you’re not in a venv):
+
+   ```bash
+   pip install -r requirements.txt
+   # or: python3 -m pip install -r requirements.txt
+   ```
+
+4. **Install Chromium for Playwright**
+
+   The checker opens a real browser; Playwright needs its own Chromium:
+
+   ```bash
+   playwright install chromium
+   # or: python3 -m playwright install chromium
+   ```
+
+   If you see permission or path errors, try: `python3 -m playwright install chromium`.
+
+5. **Verify setup**
+
+   - **CLI:** `python3 run.py --help` should print usage.
+   - **GUI:** `python3 -m streamlit run app.py` should open the app in your browser. If you get “command not found: streamlit”, use `python3 -m streamlit run app.py` (that uses the Python that has Streamlit installed).
+
+6. **Config**
+
+   Copy the example config and edit it, or use the GUI to set everything:
 
    ```bash
    cp config.example.yaml config.yaml
@@ -42,7 +72,7 @@ A self-hosted tool that checks Disneyland Paris restaurant availability for your
    - `dates` – list of dates in `YYYY-MM-DD`
    - Optionally `time_start` / `time_end`, `party_size`, `auto_book`, `dry_run`, and notification settings (see `config.example.yaml`).
 
-3. **First-time login**
+7. **First-time login**
 
    In the Web UI, click **Login and save session**; or run `python run.py --login-only --show-browser`. A browser will open—log in to Disneyland Paris when prompted. The session is saved so you don’t have to log in again (until it expires).
 
@@ -55,8 +85,10 @@ The web interface lets you configure and run checks without using the command li
 From the project folder, run:
 
 ```bash
-streamlit run app.py
+python3 -m streamlit run app.py
 ```
+
+(If `streamlit` is on your PATH you can use `streamlit run app.py` instead.)
 
 Your default browser will open to the app (usually at `http://localhost:8501`). Keep this tab open while you use the app.
 
@@ -64,7 +96,7 @@ Your default browser will open to the app (usually at `http://localhost:8501`). 
 
 In the **Configuration** form, fill in:
 
-- **Restaurant name** – The exact name as on the Disneyland Paris site (e.g. *Auberge de Cendrillon*).
+- **Restaurant** – Choose from a dropdown of table-service restaurants (by park area and hotel). If yours isn’t listed, select *Other* and type the exact name from the Disneyland Paris site.
 - **Party size** – Number of guests (1–20).
 - **Date to check** – Use the date picker for your main date.
 - **Extra dates** (optional) – Add more dates as a comma-separated list (e.g. `2026-03-16, 2026-03-17`).
@@ -172,6 +204,58 @@ Use a reasonable interval (e.g. 5–15 minutes) to avoid hammering the site. The
 
 Secrets (e.g. `smtp_password`, Pushover `api_token`) can be set via environment variables: `NOTIFY_SMTP_PASSWORD`, `NOTIFY_PUSHOVER_TOKEN`.
 
+## Troubleshooting & debugging
+
+Use these when something doesn’t work or you want to see what the tool is doing.
+
+### Run with the browser visible
+
+To watch the browser instead of running headless:
+
+- **GUI:** In the config form, check **Show browser when checking**, then click **Check availability once** or **Login and save session**.
+- **CLI:** Add `--show-browser`:
+  ```bash
+  python3 run.py --show-browser
+  python3 run.py --login-only --show-browser
+  python3 run.py --monitor --show-browser
+  ```
+
+You’ll see the same pages the script uses (login, dining search, results), which helps debug login issues, captchas, or wrong selectors.
+
+### “Streamlit” or “playwright” not found
+
+- Use the module form so the correct Python is used:
+  - **GUI:** `python3 -m streamlit run app.py`
+  - **Playwright:** `python3 -m playwright install chromium`
+- If you use a virtual environment, activate it first (`source .venv/bin/activate` or Windows equivalent), then run the commands above.
+
+### Login / session issues
+
+- **“Check failed” or errors right after opening the site:** Your saved session may have expired. Run **Login and save session** again (GUI or `python3 run.py --login-only --show-browser`) and log in when the browser opens.
+- **Session file:** Logins are stored in `playwright/storage_state.json`. Deleting that file forces a fresh login on the next run.
+- If the site shows a captcha or “suspicious activity”, log in once manually with the browser visible (`--show-browser`), then try again headless.
+
+### Check fails or finds no times
+
+- Run **once** with **Show browser when checking** (or `--show-browser`) and watch the flow: does it open the right page, fill the form, and click search? If the layout has changed, the script may not find the right buttons or fields.
+- Use **Dry run** when testing: it will report availability but never click “Confirm”, so you can confirm behaviour without booking.
+- Output from a check is shown in the GUI **Result** box, or in the terminal when using the CLI. Read the message for “No availability” vs “Could not find…” (selector/flow issue).
+
+### When the Disneyland Paris site changes
+
+If the site is redesigned, the built-in selectors may break. See **If the site changes** below and `docs/DISCOVERY.md` for how to find new URLs and selectors and update `src/dlp_flow.py`.
+
+### Quick reference: useful commands
+
+| Goal | Command |
+|------|--------|
+| Start the GUI | `python3 -m streamlit run app.py` |
+| One-off check (no window) | `python3 run.py` |
+| One-off check (see browser) | `python3 run.py --show-browser` |
+| Login only, save session | `python3 run.py --login-only --show-browser` |
+| Monitor until a slot is found | `python3 run.py --monitor` |
+| Install Chromium | `python3 -m playwright install chromium` |
+
 ## If the site changes
 
 Disneyland Paris may change URLs or page structure. The code uses a small set of selectors and URLs in `src/dlp_flow.py`. If checks or booking stop working:
@@ -183,7 +267,7 @@ See `docs/DISCOVERY.md` for what to document when testing manually.
 
 ## Project layout
 
-- `app.py` – **Web UI** (`streamlit run app.py`)
+- `app.py` – **Web UI** (`python3 -m streamlit run app.py`)
 - `run.py` – CLI entrypoint (`python run.py`)
 - `config.example.yaml` – example config
 - `src/` – main code

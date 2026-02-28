@@ -16,9 +16,16 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from src.config import Config
+from src.restaurants import (
+    RESTAURANT_OPTIONS,
+    display_to_name,
+    name_to_display,
+)
 
 CONFIG_PATH = Path("config.yaml")
 EXAMPLE_CONFIG_PATH = Path("config.example.yaml")
+OTHER_LABEL = "— Other (type name below) —"
+RESTAURANT_CHOICES = RESTAURANT_OPTIONS + [OTHER_LABEL]
 
 
 def load_config_dict() -> dict | None:
@@ -67,12 +74,26 @@ def main():
 
     with st.form("config_form"):
         st.subheader("Configuration")
-        restaurant = st.text_input(
-            "Restaurant name",
-            value=existing.get("restaurant", ""),
-            placeholder="e.g. Auberge de Cendrillon",
-            help="Exact name as on the Disneyland Paris site.",
+        saved_restaurant = existing.get("restaurant", "")
+        default_choice = name_to_display(saved_restaurant) if saved_restaurant else RESTAURANT_CHOICES[0]
+        if default_choice not in RESTAURANT_CHOICES:
+            default_choice = OTHER_LABEL
+        restaurant_choice = st.selectbox(
+            "Restaurant",
+            options=RESTAURANT_CHOICES,
+            index=RESTAURANT_CHOICES.index(default_choice) if default_choice in RESTAURANT_CHOICES else RESTAURANT_CHOICES.index(OTHER_LABEL),
+            help="Select a table-service restaurant. Names match the official Disneyland Paris site.",
         )
+        custom_restaurant = st.text_input(
+            "Custom restaurant name (only if you chose \"Other\" above)",
+            value=saved_restaurant if (not name_to_display(saved_restaurant) and saved_restaurant) else "",
+            placeholder="e.g. exact name from the website",
+            help="Leave blank unless you selected Other.",
+        )
+        if restaurant_choice == OTHER_LABEL:
+            restaurant = (custom_restaurant or "").strip()
+        else:
+            restaurant = display_to_name(restaurant_choice)
         col1, col2 = st.columns(2)
         with col1:
             party_size = st.number_input(
