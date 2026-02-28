@@ -1,0 +1,50 @@
+# Disneyland Paris Restaurant Availability Checker & Auto-Booker
+# Copy to config.yaml and fill in your values. Do not commit config.yaml (it may contain secrets).
+
+# Base URL for Disneyland Paris (locale can be en-gb, en-usd, fr-fr, etc.)
+base_url: "https://www.disneylandparis.com/en-gb"
+
+# Restaurant: name or internal ID. Use list-restaurants command to discover IDs.
+# Example: "Auberge de Cendrillon" or an ID if the site uses one.
+restaurant: ""
+
+# Date(s) to check. Use YYYY-MM-DD. For multiple dates, list them.
+dates:
+  - "2026-03-15"
+
+# Time window: only consider slots between these times (optional; leave empty for any time).
+# Format: "HH:MM" (24-hour).
+time_start: "18:00"
+time_end: "21:00"
+
+# Party size (number of guests).
+party_size: 2
+
+# When true, automatically complete the reservation when a slot is found.
+# When false, only check and notify (alert-only mode).
+auto_book: false
+
+# Dry run: if true, only check availability and never click "confirm" even when auto_book is true.
+dry_run: false
+
+# Polling interval in minutes when running in monitor mode (e.g. check every 10 minutes).
+poll_interval_minutes: 10
+
+# Optional: jitter in seconds added to poll interval to avoid rigid patterns.
+poll_jitter_seconds: 60
+
+# Notifications (all optional)
+notifications:
+  # Console and log file always run. Optionally also:
+  # email:
+  #   enabled: true
+  #   smtp_host: "smtp.gmail.com"
+  #   smtp_port: 587
+  #   smtp_user: "your@email.com"
+  #   smtp_password: "app-password"  # or use env var NOTIFY_SMTP_PASSWORD
+  #   from_addr: "your@email.com"
+  #   to_addr: "your@email.com"
+  # pushover:
+  #   enabled: true
+  #   user_key: "your-pushover-user-key"
+  #   api_token: "your-pushover-api-token"  # or use env var NOTIFY_PUSHOVER_TOKEN
