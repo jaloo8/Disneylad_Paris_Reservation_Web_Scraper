@@ -11,6 +11,7 @@ A self-hosted tool that checks Disneyland Paris restaurant availability for your
 - **Auto-book mode:** complete the reservation when a slot is found (optional dry run)
 - **Saved session:** log in once; subsequent runs reuse cookies so you don’t re-enter credentials
 - **Monitor mode:** keep checking every N minutes until availability is found
+- **Web UI:** configure and run everything from your browser (no command line required for daily use)
 
 ## Requirements
 
@@ -43,15 +44,26 @@ A self-hosted tool that checks Disneyland Paris restaurant availability for your
 
 3. **First-time login**
 
-   Run once with a visible browser and save your session:
+   In the Web UI, click **Login and save session**; or run `python run.py --login-only --show-browser`. A browser will open—log in to Disneyland Paris when prompted. The session is saved so you don’t have to log in again (until it expires).
 
-   ```bash
-   python run.py --login-only --show-browser
-   ```
+### Web UI (recommended)
 
-   A browser will open. Log in to Disneyland Paris on the site when prompted. After you’re logged in, the script saves the session to `playwright/storage_state.json` and exits. Later runs will reuse this so you don’t have to log in again (until the session expires).
+Run the app in your browser so you can set options and run checks without using the command line:
 
-## Usage
+```bash
+streamlit run app.py
+```
+
+Your browser will open to the app. There you can:
+
+- **Set options** in the form (restaurant, date, party size, time window, auto-book, dry run) and click **Save configuration**.
+- Click **Login and save session** once to log in to Disneyland Paris in a pop-up browser; the session is saved for future runs.
+- Click **Check availability once** to run a single check and see the result in the page.
+- For continuous monitoring, the app shows the command to run in a terminal (`python run.py --monitor`).
+
+No need to edit YAML for basic use—everything can be done from the UI.
+
+## Usage (command line)
 
 - **Single check (headless):**
 
@@ -132,7 +144,8 @@ See `docs/DISCOVERY.md` for what to document when testing manually.
 
 ## Project layout
 
-- `run.py` – entrypoint (`python run.py`)
+- `app.py` – **Web UI** (`streamlit run app.py`)
+- `run.py` – CLI entrypoint (`python run.py`)
 - `config.example.yaml` – example config
 - `src/` – main code
   - `config.py` – load config
